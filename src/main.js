@@ -25,9 +25,8 @@ const onSearchFormSubmit = async e => {
     e.preventDefault();
     clearGallery();
     hideLoadMoreButton();
-    // ==========
+    
     currentPage = 1;
-    // ==========
 
     searchValue = e.target.elements['search-text'].value.trim();
     if (searchValue === '') {
@@ -45,6 +44,7 @@ const onSearchFormSubmit = async e => {
       currentPage
     );
     totalHits = total;
+    
     if (hits.length === 0) {
       iziToast.error({
         message:
@@ -53,11 +53,20 @@ const onSearchFormSubmit = async e => {
       });
       return;
     }
+    
     createGallery(hits);
+    
     if (currentPage * perPage < totalHits) {
       showLoadMoreButton();
     } else {
       hideLoadMoreButton();
+
+      if (hits.length > 0) {
+        iziToast.info({
+          message: "We're sorry, but you've reached the end of search results.",
+          position: 'topRight',
+        });
+      }
     }
   } catch (error) {
     iziToast.error({
@@ -74,16 +83,19 @@ const onLoadBtnClick = async e => {
     showLoader();
     e.target.blur();
     currentPage += 1;
+    
     const { hits } = await getImagesByQuery(searchValue, currentPage);
     createGallery(hits);
-    showLoadMoreButton();
+    
     if (currentPage * perPage >= totalHits) {
-      refs.loadBtn.removeEventListener('click', onLoadBtnClick);
       hideLoadMoreButton();
       iziToast.info({
         message: "We're sorry, but you've reached the end of search results.",
         position: 'topRight',
       });
+    } else {
+
+      showLoadMoreButton();
     }
 
     const heightCard =
